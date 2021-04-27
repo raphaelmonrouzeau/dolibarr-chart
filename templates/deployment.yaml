@@ -1,0 +1,93 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "dolibarr.fullname" . }}
+  labels:
+    helm.sh/chart: {{ include "dolibarr.chart" . }}
+    app.kubernetes.io/name: {{ include "dolibarr.name" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    {{- range $key, $value := .Values.extraLabels }}
+    "{{ $key }}": "{{ $value }}"
+    {{- end }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "dolibarr.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  replicas: {{ .Values.replicaCount }}
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        helm.sh/chart: {{ include "dolibarr.chart" . }}
+        app.kubernetes.io/name: {{ include "dolibarr.name" . }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/version: {{ .Chart.AppVersion }}
+        {{- range $key, $value := .Values.extraLabels }}
+        "{{ $key }}": "{{ $value }}"
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: {{ .Chart.Name }}
+        {{- with .Values.image }}
+        image: "{{ .repository }}{{ if .digest }}@{{ .digest }}{{ else }}:{{ .tag }}{{ end }}"
+        imagePullPolicy: {{ .pullPolicy }}
+        {{- end }}
+        ports:
+        - name: http
+          containerPort: 80
+          protocol: TCP
+        - name: https
+          containerPort: 443
+          protocol: TCP
+        env:
+        - name: DOLI_AUTO_CONFIGURE
+          value: ''
+        #readinessProbe:
+        #  exec:
+        #    command:
+        #    - ls
+        #    - /export
+        #  initialDelaySeconds: 5
+        #  periodSeconds: 5
+        livenessProbe:
+          exec:
+            command: [timeout, '10', ls, /var/www/]
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        volumeMounts:
+        - name: www
+          mountPath: /var/www
+        {{- with .Values.resources }}
+        resources:
+          {{- toYaml . | nindent 12 }}
+        {{- end }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+      - name: www
+        #emptyDir: {}
+        persistentVolumeClaim:
+          claimName: {{ include "dolibarr.fullname" . }}

@@ -1,0 +1,2 @@
+Dolibarr has now been installed.
+

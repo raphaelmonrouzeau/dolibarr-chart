@@ -1,0 +1,75 @@
+# Default values for nfs-provisioner.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# This should really be hardcoded to 1
+replicaCount: 1
+
+# imagePullSecrets:
+
+image:
+  repository: monogramm/docker-dolibarr
+  tag: 13.0-alpine
+  # digest:
+  pullPolicy: IfNotPresent
+
+service:
+  # Type of Service
+  #type: ClusterIP
+  #clusterIP: ''
+  # HTTP port
+  #httpPort: 80
+  # HTTPS port
+  #httpsPort: 443
+  # If your service is of type NodePort you can choose the ports
+  # httpNodePort: 80
+  # httpsNodePort: 443
+  externalIPs: []
+
+persistence:
+  enabled: true
+
+  ## Persistent Volume Storage Class
+  ## If defined, storageClassName: <storageClass>
+  ## If set to "-", storageClassName: "", which disables dynamic provisioning
+  ## If undefined (the default) or set to null, no storageClassName spec is
+  ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+  ##   GKE, AWS & OpenStack)
+  ##
+  # storageClass: "-"
+  storageClass: nfs-over-scw-bssd
+
+  #accessMode: ReadWriteOnce
+  accessMode: ReadWriteMany
+  size: 50Gi
+
+#serviceAccountName: default
+
+resources: {}
+  # limits:
+  #  cpu: 100m
+  #  memory: 128Mi
+  # requests:
+  #  cpu: 100m
+  #  memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# Extra labels to put on resources.
+# We advise to set at least
+#   app.kubernetes.io/part-of: Environment | Platform | Application | Service
+#   app.kubernetes.io/component: E.g. "nfs-provisioner"
+#extraLabels: {}
+extraLabels:
+   app.kubernetes.io/part-of: dolibarr
+   app.kubernetes.io/component: dolibarr
+
+ingress:
+  enabled: true
+  hosts:
+  - name: doli.tecservices.fr
+    tls: true

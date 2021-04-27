@@ -1,0 +1,45 @@
+{{- if .Values.ingress }}
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "dolibarr.fullname" . }}
+  labels:
+    helm.sh/chart: {{ include "dolibarr.chart" . }}
+    app.kubernetes.io/name: {{ include "dolibarr.name" . }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    {{- range $key, $value := .Values.extraLabels }}
+    "{{ $key }}": "{{ $value }}"
+    {{- end }}
+  {{- with .Values.ingress.annotations }}
+  annotations:
+    {{- range $key, $value := .Values.ingress.annotations }}
+    "{{ $key }}": "{{ $value }}"
+    {{- end }}
+  {{- end }}
+spec:
+  rules:
+  {{- range .Values.ingress.hosts }}
+  - host: {{ .name }}
+    http:
+      paths:
+      - path: {{ default "/" .path }}
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ include "dolibarr.fullname" $ }}
+            port:
+              number: http
+  {{- end }}
+  tls:
+  {{- range .Values.ingress.hosts }}
+  {{- if .tls }}
+  - hosts:
+    - {{ .name }}
+    secretName: tls-{{ .name }}
+  {{- end }}
+  {{- end }}
+{{- end }}
+{{- end }}

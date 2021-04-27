@@ -1,0 +1,27 @@
+apiVersion: v2
+
+appVersion: 13.0.0
+
+description: >-
+  Dolibarr is an Open Source ERP & CRM suitable to SMEs, Large Companies,
+  Freelancers or Foundations.
+  This chart is based on https://github.com/Monogramm/docker-dolibarr
+
+name: dolibarr
+
+version: 0.0.1
+
+maintainers:
+- name: raphael
+  email: raphael.monrouzeau@gmail.com
+
+home: https://github.com/raphaelmonrouzeau/dolibarr-chart
+
+sources:
+- https://github.com/raphaelmonrouzeau/dolibarr-chart
+
+keywords:
+- erp
+- crm
+
+icon: https://wiki.dolibarr.org/images/5/51/Dolibarr_124x124_white.svg
